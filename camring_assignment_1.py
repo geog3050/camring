@@ -95,8 +95,11 @@ def str2float(s):
 #     >>> lineLength()
 #     0.0
 ######################################################################
-def lineLength(p1=(0, 0), p2=(0, 0)):
-    pass
+import math 
+def lineLength(p1=(0, 0), p2=(0, 0)):   
+    linedist = math.sqrt((p2[0]-p1[0])**2 + (p2[1] - p1[1])**2)
+    print(linedist)
+
 
 ######################################################################
 # Problem 4 (25 Points)
