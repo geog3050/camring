@@ -34,7 +34,10 @@ def hawkid():
 # replace it with the appropriate return() statement.
 ###################################################################### 
 def listAverage(l):
-    return sum(l) / len(l)
+    if len(l) > 0:
+        print(sum(l) / len(l))
+    elif len(l) == 0:
+        print('False')
 
 
 ###################################################################### 
@@ -58,8 +61,12 @@ def listAverage(l):
 #     0.0
 ###################################################################### 
 def str2float(s):
-    float(s)
-    print(s)
+    try:
+        a = float(s)
+    except:
+        a = 'False'
+    print(a)
+        
 
 ######################################################################
 # Problem 3 (25 points)
@@ -105,7 +112,10 @@ def lineLength(p1=(0, 0), p2=(0, 0)):
 #     True
 ###################################################################### 
 def isOdd(n):
-    pass
+    if n % 2:
+        print('True')
+    else:
+        print('False')
 
 ######################################################################
 # MAKE NO CHANGES BEYOND THIS POINT.
