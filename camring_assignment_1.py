@@ -34,8 +34,9 @@ def hawkid():
 # replace it with the appropriate return() statement.
 ###################################################################### 
 def listAverage(l):
-    if l == False:
-        print('False')
+    return sum(l) / len(l)
+
+
 ###################################################################### 
 # Problem 2 (25 Points)
 # 
@@ -57,7 +58,8 @@ def listAverage(l):
 #     0.0
 ###################################################################### 
 def str2float(s):
-    pass
+    float(s)
+    print(s)
 
 ######################################################################
 # Problem 3 (25 points)
