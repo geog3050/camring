@@ -30,7 +30,10 @@ def hawkid():
 #    Remember that area calculations are not accurate in geographic coordinate systems. 
 # 
 ###################################################################### 
+import system
+
 import arcpy
+arcpy.env.workspace = "C:\Users\Cam\Documents\School\2020-2021\Geog3050\Data\assignment2_data"
 def calculateDensity(inputShapeFile, attribute, arealUnit):
     desc = arcpy.Describe(inputShapeFile)
         #if desc == polygon:
