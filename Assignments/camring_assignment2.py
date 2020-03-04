@@ -14,53 +14,76 @@ def hawkid():
 ###################################################################### 
 # Problem 1 (30 Points)
 #
-# Given a polygon shapefile with an attribute based on count data (e.g., population, disease count)
-# and an areal measurement (square miles, kilometers, or meters):
-# this function calculates and appends a new density column to the input shapefile.
+# Given a polygon feature class in a geodatabase, a count attribute of the feature class(e.g., population, disease count):
+# this function calculates and appends a new density column to the input feature class in a geodatabase.
 
-# Use a polygon file to do following tasks in your function:
-# - Calculate area of each polygon in given input unit (e.g., square miles) and append to a new column
-# - Create a field (e.g., density_sqm) and calculate the density of the count variable selected
-#   using the area of each polygon and its count variable (e.g., population) 
+# Given any polygon feature class in the geodatabase and a count variable:
+# - Calculate the area of each polygon in square miles and append to a new column
+# - Create a field (e.g., density_sqm) and calculate the density of the selected count variable
+#   using the area of each polygon and its count variable(e.g., population) 
 # 
-# 1- Check whether the input variables are correct
-#   (e.g., the shape type, attribute name and the areal unit)
+# 1- Check whether the input variables are correct(e.g., the shape type, attribute name)
 # 2- Make sure overwrite is enabled if the field name already exists.
-# 3- Give a warning message if the projection is a geographic projection(e.g., WGS84, NAD83).
+# 3- Identify the input coordinate systems unit of measurement (e.g., meters, feet) for an accurate area calculation and conversion
+# 4- Give a warning message if the projection is a geographic projection(e.g., WGS84, NAD83).
 #    Remember that area calculations are not accurate in geographic coordinate systems. 
 # 
 ###################################################################### 
-import system
-
+import sys
 import arcpy
-arcpy.env.workspace = "C:\Users\Cam\Documents\School\2020-2021\Geog3050\Data\assignment2_data"
-def calculateDensity(inputShapeFile, attribute, arealUnit):
-    desc = arcpy.Describe(inputShapeFile)
-        #if desc == polygon:
-    return desc
+#setting workspace to test values
+arcpy.env.workspace = "C:\Users\camring\Geog3050\data\assignment2.gdb"
+def calculateDensity(geodatabase = "assignment2.gdb", fcpolygon, attribute):
+    arcpy.env.workspace = geodatabase
+    featureClasses = arcpy.ListFeatureClasses()
+
+    
+    
+    #1. checking fcpolygon input variable
+    fc = fcpolygon
+    describe_fc = arcpy.Describe(fc)
+    if describe_fc.shapeType == "Polygon":
+        pass
+    else:
+        print("fcpolygon is not a Polygon")
+
+    #1. checking attribute
+    field_names = [f.name for f in arcpy.ListFields(geodatabase)]
+    for item in field_names:
+        if attribute in field_names:
+            print("print in field")
+        else:
+            print("attribute not in database")
+
 
 ###################################################################### 
 # Problem 2 (40 Points)
 # 
-# Given a line shapefile (e.g.,river_network.shp) and a polygon shapefile (e.g.,states.shp) and a distance unit:
-# this function calculates and saves the total length of the line features (e.g., rivers) in given distance unit (e.g., km) for each polygon.
+# Given a line feature class (e.g.,river_network.shp) and a polygon feature class (e.g.,states.shp) in a geodatabase, and
+# a specific id or name of a single polygon (e.g., Iowa) for using as a clip feature:
+# this function clips the linear feature class by the selected polygon boundary,
+# and then calculates and returns the total length of the line features (e.g., rivers) in miles for the selected polygon.
 # 
-# 1- Check whether the input variables are correct (e.g., the shape types and the distance unit)
+# 1- Check whether the input variables are correct (e.g., the shape types and the name or id of the selected polygon)
 # 2- Transform the projection of one to other if the line and polygon shapefiles have different projections
+# 3- Identify the input coordinate systems unit of measurement (e.g., meters, feet) for an accurate distance calculation and conversion
 #        
 ###################################################################### 
-def estimateTotalLineLengthInPolygons(inputLineShapeFile, inputClipShapeFile, clipPolygonID, distanceUnit):
+def estimateTotalLineLengthInPolygons(geodatabase = "assignment2.gdb", fcLine, fcClipPolygon, clipPolygonID):
     pass
 
 ######################################################################
 # Problem 3 (30 points)
 # 
-# Given an input point shapefile, i.e., eu_cities.shp and a distance threshold and unit:
+# Given an input point feature class, (i.e., eu_cities.shp) and a distance threshold and unit:
 # Calculate the number of points within the distance threshold from each point (e.g., city),
 # and append the count to a new field (attribute).
-# 
+#
+# 1- Identify the input coordinate systems unit of measurement (e.g., meters, feet, degrees) for an accurate distance calculation and conversion
+# 2- If the coordinate system is geographic (latitude and longitude degrees) then calculate bearing (great circle) distance
+#
 ######################################################################
-def countObservationsWithinDistance(inputPointShapeFile, distance, distanceUnit):
+def countObservationsWithinDistance(geodatabase = "assignment2.gdb", fcPoint, distance, distanceUnit):
     pass
 
 ######################################################################
