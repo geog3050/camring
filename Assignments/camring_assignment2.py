@@ -42,18 +42,22 @@ def calculateDensity(geodatabase = "assignment2.gdb", fcpolygon, attribute):
     #1. checking fcpolygon input variable
     fc = fcpolygon
     describe_fc = arcpy.Describe(fc)
-    if describe_fc.shapeType == "Polygon":
-        pass
-    else:
-        print("fcpolygon is not a Polygon")
+    if describe_fc.shapeType != "Polygon":
+        return("
 
     #1. checking attribute
     field_names = [f.name for f in arcpy.ListFields(geodatabase)]
     for item in field_names:
-        if attribute in field_names:
-            print("print in field")
-        else:
-            print("attribute not in database")
+        if attribute not in field_names:
+            return("Wrong attribute name")
+
+    #calculate area
+        
+    #create a field (make sure overite enabled)
+    arcpy.AddField_management(###, "density_sqm", "FLOAT")
+
+    #calculate density
+    
 
 
 ###################################################################### 
@@ -85,6 +89,7 @@ def estimateTotalLineLengthInPolygons(geodatabase = "assignment2.gdb", fcLine, f
 ######################################################################
 def countObservationsWithinDistance(geodatabase = "assignment2.gdb", fcPoint, distance, distanceUnit):
     pass
+    
 
 ######################################################################
 # MAKE NO CHANGES BEYOND THIS POINT.
