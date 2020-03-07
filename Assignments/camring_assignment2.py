@@ -31,33 +31,50 @@ def hawkid():
 ###################################################################### 
 import sys
 import arcpy
-#setting workspace to test values
-arcpy.env.workspace = "C:\Users\camring\Geog3050\data\assignment2.gdb"
-def calculateDensity(geodatabase = "assignment2.gdb", fcpolygon, attribute):
-    arcpy.env.workspace = geodatabase
+#setting workspace
+folderpath = os.path.abspath("assignment2.gdb")
+workspace = os.path.dirname(folderpath)
+arcpy.env.workspace = workspace
+def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
+    #finding workspace in current directory 
+    arcpy.env.workspace = os.path.abspath(geodatabase)
+    #global variables
     featureClasses = arcpy.ListFeatureClasses()
+    describe_fcpolygon = arcpy.Describe(fcpolygon)
+    dist_mes = describe_fcpolygon.spatialReference.LinearUnitName
+    geo_sys = describe_fcpolygon.spatialReference.name
 
-    
-    
     #1. checking fcpolygon input variable
-    fc = fcpolygon
-    describe_fc = arcpy.Describe(fc)
+    describe_fc = arcpy.Describe(fcpolygon)
     if describe_fc.shapeType != "Polygon":
-        return("
+        return("fc not a polygon.")
 
     #1. checking attribute
-    field_names = [f.name for f in arcpy.ListFields(geodatabase)]
+    field_names = [f.name for f in arcpy.ListFields(fcpolygon)]
     for item in field_names:
         if attribute not in field_names:
-            return("Wrong attribute name")
+            return("Wrong attribute name.")
 
-    #calculate area
-        
-    #create a field (make sure overite enabled)
-    arcpy.AddField_management(###, "density_sqm", "FLOAT")
+    #create a field for area and density (make sure overite enabled)
+    arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
+    arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
+    #calculating area and updateing area in sqm
+    UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["Shape_Area", "area_sqm"])
+    for row in UpdateCursor:
+        if dist_mes == "Meter":
+            row[1] = row[0] * 0.0000003861
+        else:
+            row[1] = row[0]
+        UpdateCursor.updateRow(row)
+    del row
+    del UpdateCursor
+                              
+    #creating an update cursor to do density in sqm
 
-    #calculate density
     
+    #warning for geographic coordinate system
+    #if geo_sys == "GCS_WGS_1984" or ####:
+    #return message
 
 
 ###################################################################### 
