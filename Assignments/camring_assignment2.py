@@ -38,7 +38,7 @@ arcpy.env.workspace = workspace
 def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
     #finding workspace in current directory 
     arcpy.env.workspace = os.path.abspath(geodatabase)
-    #global variables
+    #variables
     featureClasses = arcpy.ListFeatureClasses()
     describe_fcpolygon = arcpy.Describe(fcpolygon)
     dist_mes = describe_fcpolygon.spatialReference.LinearUnitName
@@ -56,8 +56,18 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
             return("Wrong attribute name.")
 
     #create a field for area and density (make sure overite enabled)
-    arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
-    arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
+    fields = arcpy.ListFields("area_sqm", "density_sm")
+    try:
+        arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
+        arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
+    except:
+        arcpy.DeleteField_management(fcpolygon,["area_sqm", "density_sqm"])
+        if len(fields) < 2:
+            arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
+            arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
+        
+
+        
     #calculating area and updateing area in sqm
     UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["Shape_Area", "area_sqm"])
     for row in UpdateCursor:
@@ -70,10 +80,17 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
     del UpdateCursor
                               
     #creating an update cursor to do density in sqm
+    UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["area_sqm", attribute, "density_sqm"])
+    for row in UpdateCursor:
+        row[2] = row[1]/row[0]
+        UpdateCursor.updateRow(row)
+    del row
+    del UpdateCursor
 
     
     #warning for geographic coordinate system
-    #if geo_sys == "GCS_WGS_1984" or ####:
+    if geo_sys == "GCS_WGS_1984" or geo_sys != None:
+        print("warning area calculations are not accurate in geographic coordinate systems.")
     #return message
 
 
@@ -90,8 +107,22 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 # 3- Identify the input coordinate systems unit of measurement (e.g., meters, feet) for an accurate distance calculation and conversion
 #        
 ###################################################################### 
-def estimateTotalLineLengthInPolygons(geodatabase = "assignment2.gdb", fcLine, fcClipPolygon, clipPolygonID):
-    pass
+def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geodatabase = "assignment2.gdb"):
+    total_dist = 0.0
+    field_name = str(clipPolygonID)
+    arcpy.AddField_management(fcClipPolygon, field_name, "FLOAT")
+    cursor = arcpy.da.UpdateCursor(fcClipPolygon,["state_ID", field_name]) 
+    for row in cursor:
+        if row[0] == clipPolygonID:
+            row[1] = row[0]
+    del row
+    del cursor
+
+    cursor = arcpy.da.SearchCursor(fcClipPolygon,["SHAPE@LENGTH"]) 
+    for row in cursor:
+        print(row[0])
+    del row
+    del cursor
 
 ######################################################################
 # Problem 3 (30 points)
@@ -105,7 +136,20 @@ def estimateTotalLineLengthInPolygons(geodatabase = "assignment2.gdb", fcLine, f
 #
 ######################################################################
 def countObservationsWithinDistance(geodatabase = "assignment2.gdb", fcPoint, distance, distanceUnit):
-    pass
+    fields = ['ROAD_TYPE', 'BUFFER_DISTANCE']
+
+    # Create update cursor for feature class 
+    #with arcpy.da.UpdateCursor(fc, fields) as cursor:
+    # Update the field used in Buffer so the distance is based on road 
+    # type. Road type is either 1, 2, 3 or 4. Distance is in meters. 
+    #for row in cursor:
+        # Update the BUFFER_DISTANCE field to be 100 times the 
+        # ROAD_TYPE field.
+        #row[1] = row[0] * 100
+        #cursor.updateRow(row) 
+
+# Buffer feature class using updated field values
+#arcpy.Buffer_analysis(fc, 'roads_buffer', 'BUFFER_DISTANCE')
     
 
 ######################################################################
