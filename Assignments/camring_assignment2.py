@@ -108,19 +108,26 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 #        
 ###################################################################### 
 def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geodatabase = "assignment2.gdb"):
+    #variables
     total_dist = 0.0
     field_name = str(clipPolygonID)
     arcpy.AddField_management(fcClipPolygon, field_name, "FLOAT")
-    cursor = arcpy.da.UpdateCursor(fcClipPolygon,["state_ID", field_name]) 
+     
+    #checking input variables
+
+    #determinining & changing projection
+    
+    #calculating total distance
+    cursor = arcpy.da.UpdateCursor(fcClipPolygon,["state_ID", field_name])
     for row in cursor:
         if row[0] == clipPolygonID:
-            row[1] = row[0]
+            arcpy.Intersect_analysis(fcLine, fcLine_intersect)
     del row
     del cursor
 
-    cursor = arcpy.da.SearchCursor(fcClipPolygon,["SHAPE@LENGTH"]) 
+    cursor = arcpy.da.SearchCursor(fcLine_intersect,["SHAPE@LENGTH"]) 
     for row in cursor:
-        print(row[0])
+        return(row[0])
     del row
     del cursor
 
@@ -135,21 +142,11 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
 # 2- If the coordinate system is geographic (latitude and longitude degrees) then calculate bearing (great circle) distance
 #
 ######################################################################
-def countObservationsWithinDistance(geodatabase = "assignment2.gdb", fcPoint, distance, distanceUnit):
-    fields = ['ROAD_TYPE', 'BUFFER_DISTANCE']
-
-    # Create update cursor for feature class 
-    #with arcpy.da.UpdateCursor(fc, fields) as cursor:
-    # Update the field used in Buffer so the distance is based on road 
-    # type. Road type is either 1, 2, 3 or 4. Distance is in meters. 
-    #for row in cursor:
-        # Update the BUFFER_DISTANCE field to be 100 times the 
-        # ROAD_TYPE field.
-        #row[1] = row[0] * 100
-        #cursor.updateRow(row) 
-
-# Buffer feature class using updated field values
-#arcpy.Buffer_analysis(fc, 'roads_buffer', 'BUFFER_DISTANCE')
+def countObservationsWithinDistance(fcPoint, distance, distanceUnit, geodatabase = "assignment2.gdb"):
+    cursor = arcpy.da.SearchCursor(fcPoint, ["pointID"])
+    for row in cursor:
+        arcpy.PointDistance_analysis(row[0], fcPoint, out_table, distance)
+    return(out_table)
     
 
 ######################################################################
