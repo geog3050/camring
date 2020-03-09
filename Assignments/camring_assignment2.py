@@ -62,26 +62,28 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
         arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
     except:
         arcpy.DeleteField_management(fcpolygon,["area_sqm", "density_sqm"])
-        if len(fields) < 2:
+        if len(fields) <= 2:
             arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
             arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
         
 
         
     #calculating area and updateing area in sqm
-    UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["Shape_Area", "area_sqm"])
-    for row in UpdateCursor:
-        if dist_mes == "Meter":
-            row[1] = row[0] * 0.0000003861
-        else:
-            row[1] = row[0]
-        UpdateCursor.updateRow(row)
-    del row
-    del UpdateCursor
+    #UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["Shape_Area", "area_sqm"])
+    #for row in UpdateCursor:
+        #if dist_mes == "Meter":
+            #row[1] = row[0] * 0.0000003861
+        #else:
+            #row[1] = row[0]
+        #UpdateCursor.updateRow(row)
+    #del row
+    #del UpdateCursor
                               
     #creating an update cursor to do density in sqm
+    
     UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["area_sqm", attribute, "density_sqm"])
     for row in UpdateCursor:
+        row[0] = arcpy.CalculateGeometryAttributs(fcPolygon,["AREA", "SQUARE_MILES_US"] 
         row[2] = row[1]/row[0]
         UpdateCursor.updateRow(row)
     del row
@@ -110,7 +112,7 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geodatabase = "assignment2.gdb"):
     #variables
     total_dist = 0.0
-    field_name = str(clipPolygonID)
+    field_name = clipPolygonID
     arcpy.AddField_management(fcClipPolygon, field_name, "FLOAT")
      
     #checking input variables
@@ -118,10 +120,10 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
     #determinining & changing projection
     
     #calculating total distance
-    cursor = arcpy.da.UpdateCursor(fcClipPolygon,["state_ID", field_name])
+    cursor = arcpy.da.UpdateCursor(fcClipPolygon,["NAMELSAD10", field_name])
     for row in cursor:
         if row[0] == clipPolygonID:
-            arcpy.Intersect_analysis(fcLine, fcLine_intersect)
+            arcpy.Intersect_analysis([fcLine] "fcLine_intersect", "ALL", "","LINE")
     del row
     del cursor
 
@@ -143,7 +145,7 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
 #
 ######################################################################
 def countObservationsWithinDistance(fcPoint, distance, distanceUnit, geodatabase = "assignment2.gdb"):
-    cursor = arcpy.da.SearchCursor(fcPoint, ["pointID"])
+    cursor = arcpy.da.SearchCursor(fcPoint, ["ObjectID"])
     for row in cursor:
         arcpy.PointDistance_analysis(row[0], fcPoint, out_table, distance)
     return(out_table)
