@@ -33,6 +33,7 @@ import sys
 import arcpy
 #setting workspace
 folderpath = os.path.abspath("assignment2.gdb")
+env.overwiteOutput = True
 workspace = os.path.dirname(folderpath)
 arcpy.env.workspace = workspace
 def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
@@ -57,14 +58,8 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 
     #create a field for area and density (make sure overite enabled)
     fields = arcpy.ListFields("area_sqm", "density_sm")
-    try:
-        arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
-        arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
-    except:
-        arcpy.DeleteField_management(fcpolygon,["area_sqm", "density_sqm"])
-        if len(fields) <= 2:
-            arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
-            arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
+    arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
+    arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
         
 
         
@@ -91,7 +86,7 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 
     
     #warning for geographic coordinate system
-    if geo_sys == "GCS_WGS_1984" or geo_sys != None:
+    if geo_sys == "GCS_WGS_1984" or geo_sys == "NAD_1983_UTM_Zone_15":
         print("warning area calculations are not accurate in geographic coordinate systems.")
     #return message
 
@@ -111,21 +106,33 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 ###################################################################### 
 def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geodatabase = "assignment2.gdb"):
     #variables
-    total_dist = 0.0
-    field_name = clipPolygonID
     arcpy.AddField_management(fcClipPolygon, field_name, "FLOAT")
+    arcpy.env.overwriteOutput = True
      
     #checking input variables
-
-    #determinining & changing projection
+    describe_fc = arcpy.Describe(fcClipPolygon)
+    if describe_fc.shapeType != "Polygon":
+        return("fc not a polygon.")
     
+    #determinining & changing projection
+    describe_fcClipPolygon = arcpy.Describe(fcClipPolygon)
+    describe_fcLine = arcpy.Describe(fcLine)
+    if describe_fcClipPolygon != describe_fcLine:
+        try:
+            arcpy.DefineProjection_management(fcClipPolygon, "NAD_1983_UTM_Zone_15")
+        except:
+            print("cannot change projection")
+        
     #calculating total distance
-    cursor = arcpy.da.UpdateCursor(fcClipPolygon,["NAMELSAD10", field_name])
-    for row in cursor:
-        if row[0] == clipPolygonID:
-            arcpy.Intersect_analysis([fcLine] "fcLine_intersect", "ALL", "","LINE")
-    del row
-    del cursor
+    try:
+        arcpy.MakefeatureLayer_management(fcClipPolygon, "ID_lyr")
+        arcpy.SelectLayerByAttribute_management("ID_lyr", "NAMELSAD10 ="+ str(clipPolygonID))
+        arcpy.CopyFeatures_management("ID_lyr", "PolygonID.shp")
+        arcpy.Intersect_analysis([fcLine, "PolygonID.shp"] "fcLine_intersect", "ALL", "","LINE")
+
+    except:
+        print(arcpy.GetMessages())
+
 
     cursor = arcpy.da.SearchCursor(fcLine_intersect,["SHAPE@LENGTH"]) 
     for row in cursor:
@@ -144,11 +151,14 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
 # 2- If the coordinate system is geographic (latitude and longitude degrees) then calculate bearing (great circle) distance
 #
 ######################################################################
-def countObservationsWithinDistance(fcPoint, distance, distanceUnit, geodatabase = "assignment2.gdb"):
-    cursor = arcpy.da.SearchCursor(fcPoint, ["ObjectID"])
+def countObservationsWithinDistance(fcPoint = "eu_cities.shp", distance, distanceUnit = "Meters", geodatabase = "assignment2.gdb"):
+    #identify and transform coordinate system
+    arcpy.AddField_management(fcPoint, "count_city", "FLOAT")
+    arcpy.Buffer_analysis(fcPoint, fcPointBuffer, distance)
+    arcpy.Project_management(fcPointBuffer,"fcPointBuffer_EPSG.shp","3035")                                          
+    cursor = arcpy.da.SearchCursor(fcPointBuffer,["ObjectID", "BUFF_DIST", "Shape_Area"])
     for row in cursor:
-        arcpy.PointDistance_analysis(row[0], fcPoint, out_table, distance)
-    return(out_table)
+        pass
     
 
 ######################################################################
