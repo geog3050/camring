@@ -93,9 +93,13 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
     arcpy.env.overwriteOutput = True
      
     #checking input variables
-    describe_fc = arcpy.Describe(fcClipPolygon)
-    if describe_fc.shapeType != "Polygon":
+    describe_fcPoly = arcpy.Describe(fcClipPolygon)
+    if describe_fcPoly.shapeType != "Polygon":
         return("fc not a polygon.")
+
+    describe_fcLine = arcpy.Describe(fcLine)
+    if describe_fcLine.shapeType != "Line":
+        return("fc not a Line.")
     
     #determinining & changing projection
     describe_fcClipPolygon = arcpy.Describe(fcClipPolygon)
