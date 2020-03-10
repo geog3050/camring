@@ -36,10 +36,8 @@ folderpath = os.path.abspath("assignment2.gdb")
 env.overwiteOutput = True
 workspace = os.path.dirname(folderpath)
 arcpy.env.workspace = workspace
-def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
-    #finding workspace in current directory 
-    arcpy.env.workspace = os.path.abspath(geodatabase)
-    #variables
+def calculateDensity(fcpolygon, attribute, geodatabase = r"assignment2.gdb"):
+    env.overwiteOutput = True
     featureClasses = arcpy.ListFeatureClasses()
     describe_fcpolygon = arcpy.Describe(fcpolygon)
     dist_mes = describe_fcpolygon.spatialReference.LinearUnitName
@@ -59,22 +57,7 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
     #create a field for area and density (make sure overite enabled)
     fields = arcpy.ListFields("area_sqm", "density_sm")
     arcpy.AddField_management(fcpolygon, "area_sqm", "FLOAT")
-    arcpy.AddField_management(fcpolygon, "density_sqm, "FLOAT")
-        
-
-        
-    #calculating area and updateing area in sqm
-    #UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["Shape_Area", "area_sqm"])
-    #for row in UpdateCursor:
-        #if dist_mes == "Meter":
-            #row[1] = row[0] * 0.0000003861
-        #else:
-            #row[1] = row[0]
-        #UpdateCursor.updateRow(row)
-    #del row
-    #del UpdateCursor
-                              
-    #creating an update cursor to do density in sqm
+    arcpy.AddField_management(fcpolygon, "density_sqm", "FLOAT")
     
     UpdateCursor = arcpy.da.UpdateCursor(fcpolygon, ["area_sqm", attribute, "density_sqm"])
     for row in UpdateCursor:
@@ -84,11 +67,11 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
     del row
     del UpdateCursor
 
-    
+    return(dist_mes)
     #warning for geographic coordinate system
     if geo_sys == "GCS_WGS_1984" or geo_sys == "NAD_1983_UTM_Zone_15":
         print("warning area calculations are not accurate in geographic coordinate systems.")
-    #return message
+
 
 
 ###################################################################### 
@@ -104,9 +87,9 @@ def calculateDensity(fcpolygon, attribute, geodatabase = "assignment2.gdb"):
 # 3- Identify the input coordinate systems unit of measurement (e.g., meters, feet) for an accurate distance calculation and conversion
 #        
 ###################################################################### 
-def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geodatabase = "assignment2.gdb"):
+def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geodatabase = r"assignment2.gdb"):
     #variables
-    arcpy.AddField_management(fcClipPolygon, field_name, "FLOAT")
+    #arcpy.AddField_management(fcClipPolygon, field_name, "FLOAT")
     arcpy.env.overwriteOutput = True
      
     #checking input variables
@@ -121,7 +104,7 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
         try:
             arcpy.DefineProjection_management(fcClipPolygon, "NAD_1983_UTM_Zone_15")
         except:
-            print("cannot change projection")
+            return("cannot change projection")
         
     #calculating total distance
     try:
@@ -131,7 +114,7 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
         arcpy.Intersect_analysis([fcLine, "PolygonID.shp"] "fcLine_intersect", "ALL", "","LINE")
 
     except:
-        print(arcpy.GetMessages())
+        return(arcpy.GetMessages())
 
 
     cursor = arcpy.da.SearchCursor(fcLine_intersect,["SHAPE@LENGTH"]) 
@@ -151,14 +134,33 @@ def estimateTotalLineLengthInPolygons(fcLine, fcClipPolygon, clipPolygonID, geod
 # 2- If the coordinate system is geographic (latitude and longitude degrees) then calculate bearing (great circle) distance
 #
 ######################################################################
-def countObservationsWithinDistance(fcPoint = "eu_cities.shp", distance, distanceUnit = "Meters", geodatabase = "assignment2.gdb"):
+def countObservationsWithinDistance(fcPoint = "eu_cities.shp", distance, distanceUnit, geodatabase = r"assignment2.gdb"):
     #identify and transform coordinate system
+    describe_fc = arcpy.Describe(fcPoint)
+    fc_dunit = desrive_fc.spatialReference.linearUnitName
+    env.overwiteOutput = True
+        
     arcpy.AddField_management(fcPoint, "count_city", "FLOAT")
-    arcpy.Buffer_analysis(fcPoint, fcPointBuffer, distance)
-    arcpy.Project_management(fcPointBuffer,"fcPointBuffer_EPSG.shp","3035")                                          
-    cursor = arcpy.da.SearchCursor(fcPointBuffer,["ObjectID", "BUFF_DIST", "Shape_Area"])
+    arcpy.Buffer_analysis(fcPoint, fcPointBuffer, distance)                                          
+    arcpy.MakeFeatureLayer_management(fcPoint, "points_lyr")
+    
+    count = {}
+    cursor = arcpy.da.SearchCursor(fcPointBuffer,["OID@", "SHAPE@"])
     for row in cursor:
-        pass
+        arcpy.SelectyLayerByLocation_management("points_lyr", select_features = row[1])
+
+        count = int(arcpy.GetCount_management("points_lyr").getOutput(0))
+        data[row[0]] = count
+    del row
+    del cursor
+    cursor = arcpy.da.UpdateCursor(fcPoint, ["count_city"]
+        for row in cursor:
+            row[0] = count
+        cursor.UpdateRow(row)
+    del row
+    del cursor
+    return fc_dunit
+  
     
 
 ######################################################################
