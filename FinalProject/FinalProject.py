@@ -63,7 +63,7 @@ del updatecursor
 #Make a layer containing positive changes in unemployment
 arcpy.MakeFeatureLayer_management("census_2010_county_DP1", "posChange_lyr", "unem_change > 0")
 #clip and make a new layer with thos values/ create a new fc from layer
-arcpy.CopyFeatures_management("posChange_lyr", "C:\\Users\\Cam\\Documents\\GitHub\\camring\\FinalProject\\final.gdb")
+arcpy.CopyFeatures_management("posChange_lyr", "C:\\Users\\Cam\\Documents\\GitHub\\camring\\FinalProject\\final.gdb\\posChange")
 
 
 
