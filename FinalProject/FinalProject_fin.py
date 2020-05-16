@@ -1,14 +1,14 @@
 import arcpy
 import os
 arcpy.env.overwriteOutput = True
-def findVarDiff(shpfile ="census_2010_county_DP1.shp",
+def findVarDiff(shpfile="C:\\Users\\Cam\\Documents\\School\\2020-2021\\Geog3050\\Final_Data\\final_junk\\census_2010_county_DP1.shp",
                     inTable ="C:\\Users\\Cam\\Documents\\GitHub\\camring\\FinalProject\\unemploymet_rate_data.csv",
                     varBef="unem_rate_2010",
                     varAfter="unem_rate_2018",
                     varChange ="unem_change",
                     inField ="NAMELSAD10",
                     joinField ="GeographicAreaName",
-                    workspace ="C:\\Users\\Cam\\Documents\\GitHub\\camring\\FinalProject"):
+                    workspace ="C:\\Users\\Cam\\Documents\\School\\2020-2021\\Geog3050\\Final_Data\\final_junk"):
 
     #ShpFile: the initial shapefile where you want to compare two variables
     #inTable: the csv or txt file that containes the fields you want to compare
@@ -42,7 +42,7 @@ def findVarDiff(shpfile ="census_2010_county_DP1.shp",
     #joinging the table to the feature class
     arcpy.env.workspace = gdbLocation
 
-    inFeature = gdbLocation + "\\" + str(shpfile)
+    inFeature = "C:\\Users\\Cam\\Documents\\School\\2020-2021\\Geog3050\\Final_Data\\final_junk\\VarDif.gdb\\census_2010_county_DP1"
     inField = inField
     joinTable = "Difdata"
     joinField = joinField
@@ -71,7 +71,7 @@ def findVarDiff(shpfile ="census_2010_county_DP1.shp",
             row[1] = "Urban"
         elif row[0] < 50000:
             row[1] = "Rural"
-        row[4] = row[3] - row[2]
+        row[4] = row[2] - row[3]
         updatecursor.updateRow(row)
     del row
     del updatecursor
